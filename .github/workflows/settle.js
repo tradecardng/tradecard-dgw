@@ -2,18 +2,19 @@
  * Daily settlement script
  * Runs at 00:01 Lagos time
  * 
- * 1. Reads public/daily/YYYY-MM-DD/plays.json
- * 2. Sorts by points descending
- * 3. Identifies top 10
- * 4. Generates opsPublished.csv
- * 5. Commits to repo
+ * 1. Reads plays.json (global)
+ * 2. Filters for today's plays
+ * 3. Sorts by points descending
+ * 4. Identifies top 10
+ * 5. Generates public/daily/opsPublished.csv (single file, not dated)
+ * 6. Commits to repo
  */
 
 const fs = require('fs');
 const path = require('path');
 
 /**
- * Get today's date in Lagos timezone
+ * Get today's date in Lagos timezone (YYYY-MM-DD)
  */
 function lagosToday() {
   const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -30,21 +31,24 @@ function lagosToday() {
  */
 async function settle() {
   const today = lagosToday();
-  const playsPath = path.join(__dirname, '../../public/daily', today, 'plays.json');
-  const opsPath = path.join(__dirname, '../../public/daily', today, 'opsPublished.csv');
+  const playsPath = path.join(__dirname, '../../plays.json');
+  const outputDir = path.join(__dirname, '../../public/daily');
+  const opsPath = path.join(outputDir, 'opsPublished.csv');
   
-  // Create directory if it doesn't exist
-  const dir = path.dirname(opsPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  // Create output directory if it doesn't exist
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
   }
   
-  // Read plays
-  let plays = [];
+  // Read all plays
+  let allPlays = [];
   if (fs.existsSync(playsPath)) {
     const content = fs.readFileSync(playsPath, 'utf8');
-    plays = JSON.parse(content);
+    allPlays = JSON.parse(content);
   }
+  
+  // Filter for today's plays
+  const plays = allPlays.filter(p => String(p.play_date || '') === today);
   
   if (plays.length === 0) {
     console.log(`No plays for ${today}, skipping settlement`);
@@ -68,9 +72,8 @@ async function settle() {
   let csv = 'logged_at,play_date,username,total_points,rank,credited_at,verified_status,cash_amount\n';
   
   // Generate CSV rows
-  // At this point: username and total_points are filled
-  // Still need ops to fill: credited_at, verified_status
-  // cash_amount is auto-filled here for top 10, ops can override
+  // Ops still needs to fill: credited_at, verified_status
+  // cash_amount is auto-filled here for top 10
   for (let i = 0; i < plays.length; i++) {
     const play = plays[i];
     const isTopTen = topTenRanks.has(i);
@@ -93,9 +96,10 @@ async function settle() {
     ].join(',') + '\n';
   }
   
-  // Write CSV
+  // Write CSV to public/daily/opsPublished.csv (single file, always today's)
   fs.writeFileSync(opsPath, csv);
-  console.log(`Settlement complete: ${plays.length} plays, top 10 identified, CSV written to ${opsPath}`);
+  console.log(`✓ Settlement complete: ${plays.length} plays, top 10 identified`);
+  console.log(`✓ CSV written to ${opsPath}`);
 }
 
 // Run
