@@ -1,0 +1,50 @@
+{
+  "date": "2026-09-01",
+  "campaignActive": true,
+  "rounds": [
+    {
+      "index": 1,
+      "image": "https://imgur.com/abc123.png",
+      "answer": "Amazon",
+      "options": [
+        "Amazon",
+        "Steam",
+        "iTunes",
+        "Google Play"
+      ]
+    },
+    {
+      "index": 2,
+      "image": "https://imgur.com/def456.png",
+      "answer": "Steam",
+      "options": [
+        "Steam",
+        "iTunes",
+        "Amazon",
+        "Google Play"
+      ]
+    },
+    {
+      "index": 3,
+      "image": "https://imgur.com/ghi789.png",
+      "answer": "iTunes",
+      "options": [
+        "iTunes",
+        "Google Play",
+        "Steam",
+        "Amazon"
+      ]
+    },
+    {
+      "index": 4,
+      "image": "https://imgur.com/jkl012.png",
+      "answer": "Google Play",
+      "options": [
+        "Google Play",
+        "Amazon",
+        "iTunes",
+        "Steam"
+      ]
+    }
+  ]
+}
